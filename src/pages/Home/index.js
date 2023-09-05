@@ -1,10 +1,13 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import api from "../../services/api";
+import "./home.css";
 
 //https://api.themoviedb.org/3/movie/now_playing
 
 function Home() {
-  const [filmes, setFilmes] = useState([]);
+  const [films, setFilms] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function loadFilms() {
@@ -16,15 +19,38 @@ function Home() {
         },
       });
 
-      console.log(response.data.results);
+      //console.log(response.data.results);
+      setFilms(response.data.results.slice(0, 10));
+      setLoading(false);
     }
 
     loadFilms();
   }, []);
 
+  if (loading) {
+    return (
+      <div className="loading">
+        <h2>Carregando filmes...</h2>
+      </div>
+    );
+  }
+
   return (
-    <div>
-      <h1>BEM VINDO A HOME</h1>
+    <div className="container">
+      <div className="lista-filmes">
+        {films.map((filme) => {
+          return (
+            <article key={filme.id}>
+              <strong>{filme.title}</strong>
+              <img
+                src={`https://image.tmdb.org/t/p/original/${filme.poster_path}`}
+                alt={filme.title}
+              />
+              <Link to={`filme/${filme.id}`}>Acessar</Link>
+            </article>
+          );
+        })}
+      </div>
     </div>
   );
 }
