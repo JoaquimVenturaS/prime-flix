@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-
 import api from "../../services/api";
 import "./filme-info.css";
+import { toast } from "react-toastify";
 
 function Filme() {
   const { id } = useParams();
@@ -26,22 +26,42 @@ function Filme() {
           setLoading(false);
         })
         .catch(() => {
-          console.log("FILME NÃO ENCONTRADO");
+          console.log("FILME NAO ENCONTRADO");
           navigate("/", { replace: true });
           return;
         });
     }
+
     loadFilm();
 
     return () => {
-      console.log("COMPONENTE DESMONTADO");
+      console.log("COMPONENTE FOI DESMONTADO");
     };
   }, [navigate, id]);
+
+  function salvarFilme() {
+    const minhaLista = localStorage.getItem("@primeflix");
+
+    let filmesSalvos = JSON.parse(minhaLista) || [];
+
+    const hasFilme = filmesSalvos.some(
+      (filmesSalvo) => filmesSalvo.id === filme.id
+    );
+
+    if (hasFilme) {
+      toast.warn("Esse filme já está na lista!");
+      return;
+    }
+
+    filmesSalvos.push(filme);
+    localStorage.setItem("@primeflix", JSON.stringify(filmesSalvos));
+    toast.success("Filme salvo com sucesso!");
+  }
 
   if (loading) {
     return (
       <div className="filme-info">
-        <h2>Carregando filmes...</h2>
+        <h1>Carregando detalhes...</h1>
       </div>
     );
   }
@@ -53,16 +73,17 @@ function Filme() {
         src={`https://image.tmdb.org/t/p/original/${filme.backdrop_path}`}
         alt={filme.title}
       />
+
       <h3>Sinopse</h3>
       <span>{filme.overview}</span>
-      <strong>Avaliação: {filme.vote_average} / 10</strong>
+      <strong>Avalição: {filme.vote_average} / 10</strong>
 
       <div className="area-buttons">
-        <button>Salvar</button>
+        <button onClick={salvarFilme}>Salvar</button>
         <button>
           <a
-            target="_blank"
-            rel="external noreferrer"
+            target="blank"
+            rel="external"
             href={`https://youtube.com/results?search_query=${filme.title} Trailer`}
           >
             Trailer
